@@ -1,8 +1,10 @@
 
 class Relation(object):
-    # Basically the name (with every data) of a Table (Relation)
+    # Relation (table) that can be empty or contain multiple attributes with data
+    # 
+    # TODO : Add an attributeList to this  
 
-    def __init__(self,name):
+    def __init__(self,name:str):
         self.name = name
 
     def get_name(self):

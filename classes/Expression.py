@@ -13,11 +13,12 @@ class Expression(object):
         self.sql_query = ""     # ment to be send to SQLite DB
         pass
     
-
+    # method transforming the SPJRUD expression to SQL expression
+    # it checks if the attributes and relations are correct.
     def execute(self):
         # transforms the expression as SQL querry and saves it inside self.sql_query
         
-        # TODO Before it saves itself to self.sql_query , DO THE CHECKING !!
+        # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
 
         for attribute in self.attributes:
             if type(attribute) == Expression:

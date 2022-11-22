@@ -9,4 +9,3 @@ class Relation(object):
     def __str__ (self):
         return self.name
 
-#defining something something

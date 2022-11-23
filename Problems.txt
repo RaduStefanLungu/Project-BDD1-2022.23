@@ -1,0 +1,9 @@
+
+Problemes rencontrees :
+
+    1. Vu que on doit pouvoir embriquer toutes les expressions , j'ai du verifier cela pour mieux formatter le string de sortie
+        grace aux methodes utilitaires (transform_list_to_goodString,type_attribute_to_string_inside_expression)
+        sachant que pour rajouter tt les classes dans Expression.class_type_list[] , je devrais import tt les classes dans le fichier de l'object Expression
+        Vu que j'avais du aussi import le fichier Expression.py dans le fichier avec tt les requetes(Requests.py) il y a vait un 
+        cycle d'import. Pour eviter cela , malgre que dans la programmation oriente objet on doit faire principalement un fichier par objet,
+        j'ai du tout concatener dans un seul fichier pour eviter le cycle d'import 

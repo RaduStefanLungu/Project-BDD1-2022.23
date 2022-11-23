@@ -1,0 +1,25 @@
+=== Done ===
+
+============ 
+
+
+=== TODO ===
+
+1. Finish implementation of each Expression class (./classes/Requests.py)
+2. Test each Expression class on test.db
+3. Think of creating an inside structure based on the fetched data
+    of the .db file
+4. Create a way of manually chose what .db file the user wants
+    (if the .db file exists in the ./db directory)
+5. Create a way to manually chose what Tables to load
+    in the application
+6. Create a way to let the user enter the SPJRUD expression and turn that 
+    in class objects from the program and then execute them(and all the stuff that comes with it)
+7. - 
+8. -
+9. - 
+
+10. Create a GUI ?
+
+============
+

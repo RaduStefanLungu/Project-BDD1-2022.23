@@ -30,8 +30,11 @@ class Expression(object):
         # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
 
         for attribute in self.attributes:
-            if type(attribute) == Expression:
+            if type(attribute) in self.class_type_list:
                 attribute.execute()
+        for relation in self.relations:
+            if type(relation) in self.class_type_list:
+                relation.execute()
 
         self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("'","").replace("\\","")
 
@@ -84,7 +87,7 @@ def transform_list_to_goodString(myList):
 def type_attribute_to_string_inside_expression(myAttribute,class_type_list):
 
     if type(myAttribute) in class_type_list :
-        return "( "+str(myAttribute)+" )"
+        return "( "+myAttribute.sql_query+" )"
     else:
         return str(myAttribute)
 

@@ -1,4 +1,4 @@
-from classes.Expression import Expression
+from classes.Requests import *
 from classes.Attribute import Attribute
 from classes.Relation import Relation
 
@@ -43,8 +43,8 @@ def testing_Expression_3():
     r1 = Relation("R1")
     r2 = Relation("R2")
 
-    expr0 = Expression([a0,a1],[r0])
-    expr1 = Expression([expr0,a2,a3],[r1])
+    expr0 = Expression([a0,a1],[r0],"Expression","Expression")
+    expr1 = Expression([expr0,a2,a3],[r1],"Expression","Expression")
     print('\n\n')
     
     print(expr0)
@@ -110,7 +110,45 @@ def testing_SQLite():
     # conn.commit()
 
 
-    cursor = conn.execute("SELECT id,name,age,address,salary from COMPANY")
+    # cursor = conn.execute("SELECT id,name,age,address,salary from COMPANY")
+
+    x = Project(["id","name","age","address","salary"],"COMPANY")
+    y = Project(["id","name","salary"],x)
+
+    relation = x
+    relation.execute()
+    print(relation)
+    print(relation.sql_query)
+    print("""
+            Enter yes to execute query.\n
+            Enter no to stop\n
+        """)
+    answear = input("---->>> ")
+
+    cursor = None
+    if answear == "yes":
+        cursor = conn.execute(relation.get_sql_query())  
+    else:
+        return -1
+
+
+    relation_att = []
+    print("--- Attributes of relation:\n")
+    for column in cursor.description:
+        relation_att.append(column[0])
+        print(column[0])
+    print('\n---\n')
+
+    cursor_data =cursor.fetchall() 
+    print("-Cursor had been empties with values inside cursor_data-")
+    for t in cursor_data:
+        counter = 0
+        while counter < len(t):
+            print(f"{relation_att[counter]} : {t[counter]}")
+            counter += 1 
+        print("\n")
+
+
 
 
     for row in cursor:
@@ -121,10 +159,7 @@ def testing_SQLite():
         print("Salary = "+ str(row[4]))
         print("\n")
 
-    print("--- Attributes of COMPANY relation:\n")
-    for column in cursor.description:
-        print(column[0])
-    print('\n---\n')
+    
 
     print("Operation done successfully!\n")
 

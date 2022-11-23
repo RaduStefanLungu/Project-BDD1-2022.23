@@ -1,5 +1,5 @@
-from classes.Attribute import Attribute
-from classes.Relation import Relation
+from Attribute import Attribute
+from Relation import Relation
 
 class Expression(object):
 
@@ -9,9 +9,8 @@ class Expression(object):
         self.attributes = attribute_list
         self.relations = relation_list
         self.QUERY_TYPE:str = "Expression"   # example : Select/Project/Join etc.
-
+        self.other_query_addons = ""
         self.sql_query = ""     # ment to be send to SQLite DB
-        pass
     
     # method transforming the SPJRUD expression to SQL expression
     # it checks if the attributes and relations are correct.
@@ -24,7 +23,7 @@ class Expression(object):
             if type(attribute) == Expression:
                 attribute.execute()
 
-        self.sql_query = str(self)
+        self.sql_query = str(self).replace("'","")
 
         return str(self)
 
@@ -48,6 +47,6 @@ class Expression(object):
         attString = transform_list_to_goodString(attList)
         relString = transform_list_to_goodString(relList)
 
-        return f'{self.QUERY_TYPE} {attString} FROM {relString}'
+        return f'{self.QUERY_TYPE} {attString} FROM {relString} {self.other_query_addons}'
 
 

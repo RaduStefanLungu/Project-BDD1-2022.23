@@ -20,6 +20,7 @@ class Expression(object):
         # transforms the expression as SQL querry and saves it inside self.sql_query
         
         # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
+        self.check_data()
 
         for attribute in self.attributes:
             if type(attribute) in self.class_type_list:
@@ -31,6 +32,12 @@ class Expression(object):
         self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("'","").replace("\\","")
 
         return self.sql_query
+
+    '''
+        This method verifies if entered data as SPJRUD query is correct and if it checks within the database.
+    '''
+    def check_data(self):
+        pass
 
     def get_sql_query(self):
         return self.sql_query
@@ -48,9 +55,9 @@ class Expression(object):
         relList = []
 
         for a in self.attributes:
-            attList.append(type_attribute_to_string_inside_expression(a,class_type_l))
+            attList.append(type_attribute_to_string_inside_expression(str(a),class_type_l))
         for r in self.relations:
-            relList.append(type_attribute_to_string_inside_expression(r,class_type_l))
+            relList.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
 
         attString = transform_list_to_goodString(attList)
         relString = transform_list_to_goodString(relList)
@@ -148,19 +155,107 @@ class Rename(Expression):
 
 
 class Join(Expression):
+    #TODO before joining check if the relations have commun atributes
+    #so you don't fully join
     def __init__(self, relations_list):
-        self.relations_list = relations_list
+        super().__init__([],relations_list,"Join","Union")
+    
+    # SPJRUD : Union R1,R2
+    # SQL : (SELECT * FROM R) UNION (SELECT * FROM R)   
+
+    # method transforming the SPJRUD expression to SQL expression
+    # it checks if the attributes and relations are correct.
+    def execute(self):
+        # transforms the expression as SQL querry and saves it inside self.sql_query
+        
+        # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
+
+        self.check_data()
+
+        for relation in self.relations:
+            if type(relation) in self.class_type_list:
+                relation.execute()
+        
+        if len(self.relations)== 2 :
+            self.sql_query = f"(SELECT * FROM {str(self.relations[0])}) UNION (SELECT * FROM {str(self.relations[1])}) ".replace("'","").replace("\\","")
+            return self.sql_query
+
+        select_query_per_relation = []
+        for relation in self.relations:
+            select_query_per_relation.append(f"(SELECT * FROM {str(relation)})")
+
+        self.sql_query = " UNION ".join(select_query_per_relation).replace("'","").replace("\\","")
+
+        return self.sql_query
+    
+    '''        
+        This method is used to create the string representation of this class.
+    It uses a class_type_list since we're checking nested data within
+     @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
+    '''
+    def proper_str(self,class_type_l,wanted_expression):
+        # Prints the Expression as example: 
+        # Select ['A0','A1'] from ["Relation"]
+
+        relList = []
+
+        for r in self.relations:
+            relList.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
+
+        relString = transform_list_to_goodString(relList)
+
+        return f'{wanted_expression} {relString} {self.other_query_addons}'
 
 
 class Difference(Expression):
     def __init__(self, r1,r2):
         self.r1 = r1
         self.r2 = r2
+        super().__init__([],[r1,r2],"Difference","Minus")
+
+    # method transforming the SPJRUD expression to SQL expression
+    # it checks if the attributes and relations are correct.
+    def execute(self):
+        # transforms the expression as SQL querry and saves it inside self.sql_query
+        
+        # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
+
+        self.check_data()
+
+        for relation in self.relations:
+            if type(relation) in self.class_type_list:
+                relation.execute()
+        
+
+        self.sql_query = f"({Project(['*'],self.r1).execute()}) MINUS ({Project(['*'],self.r2).execute()})".replace("'","").replace("\\","")
+
+        return self.sql_query
+    
+
+    def proper_str(self,class_type_l,wanted_expression):
+        # Prints the Expression as example: 
+        # Select ['A0','A1'] from ["Relation"]
+
+        return f'{wanted_expression} {transform_list_to_goodString(self.relations)} {self.other_query_addons}'
+
 
 
 class Union(Expression):
+    # basically just Join but  R ∪ S is only allowed if R and S have exactly the same attributes
+
     def __init__(self, r1, r2):
         self.r1 = r1
         self.r2 = r2
-        
+        super().__init__([],[r1,r2],"Union","Union")
 
+    
+    def execute(self):
+        #check if r1,r2 have the EXACT same attributes
+        
+        #execute Join([r1,r2])
+        self.sql_query = Join([self.r1,self.r2]).execute()
+
+        return self.sql_query
+    
+    # Overwrite -> def proper_str(self,class_type_l,wanted_expression)
+ 

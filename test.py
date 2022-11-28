@@ -179,6 +179,14 @@ if __name__=='__main__':
     testing_Expression_3()
     testing_SQLite()
 
+    rel_1 = "R1"
+    rel_2 = "R2"
+
+    t = Union(rel_1,rel_2)
+    t.execute()
+    print( t.sql_query )
+    print(t)
+
 
 
 

@@ -1,10 +1,17 @@
 === Done ===
 
+----> convertir une expression SPJRUD en une chaîne de caractères (vous en
+        aurez besoin pour afficher les messages d’erreur) ;
+--> Overwrite .execute() method in Join class
 ============ 
 
 
 === TODO ===
 
+----> créer une nouvelle table à partir du résultat d’une requête ;
+----> afficher le résultat d’une requête à l’écran
+
+--> Overwrite .proper_str(...) method in Union class
 1. Finish implementation of each Expression class (./classes/Requests.py)
 2. Test each Expression class on test.db
 3. Think of creating an inside structure based on the fetched data
@@ -19,7 +26,11 @@
 8. -
 9. - 
 
-10. Create a GUI ?
+10. Create a GUI ?  -> Nope , it's only a library to be used by others.Not and App
 
 ============
 
+How to use the library:
+    > Connect to the database
+    > Write your SPJRUD expression
+    > Execute your expressions and get the results

@@ -10,6 +10,9 @@ class Relation(object):
     def get_name(self):
         return self.name
 
+    def print_meta(self):
+        print(f"Relation({self.name})")
+
     def __str__ (self):
         return self.name
 

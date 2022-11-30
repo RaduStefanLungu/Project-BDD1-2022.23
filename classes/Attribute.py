@@ -7,14 +7,18 @@
 class Attribute(object):
     possible_data_type = ["INT","REAL","TEXT","CHAR"]
 
-    def __init__(self,name:str,data_type:str,data_list):
+    def __init__(self,name:str,data_type:str,primary_key:bool,not_null:bool,data_list):
+        self.primary_key = primary_key
+        self.not_null = not_null
         self.name = name
         self.data_type = ""
         if (data_type.upper().strip() in self.possible_data_type) or (data_type.upper().strip()[:4] in self.possible_data_type):
             self.data_type = data_type.upper()
         else:
-            #TODO
-            raise ValueError("\nN/A CALL CUSTOM ERRORS\n")
+            if self.name != "*":
+                #TODO
+                raise ValueError("\nN/A CALL CUSTOM ERRORS\n")
+                
 
         self.data_list = data_list
 

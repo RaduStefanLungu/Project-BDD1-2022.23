@@ -116,16 +116,6 @@ class Expression(object):
         relString = transform_list_to_goodString(relList)
 
         return f'{wanted_expression} {attString} FROM {relString} {self.other_query_addons}'
-
-
-    def create_new_table(self,db,table_name,attributes_list):
-        attributes = ""
-        
-
-
-        creational_query = f"CREATE TABLE {table_name} ({attributes})"
-
-        db.connection.execute(creational_query)
         
 
 
@@ -229,11 +219,12 @@ class Project(Expression):
     Class used to define Rename query from SPJRUD format.
 """
 class Rename(Expression):
-    #TODO
-
-    def __init__(self, attribute_list, new_names_list,relation):
+    def __init__(self, attribute_list, new_names_list:list[str],relation):
         self.new_names_list = new_names_list
-        super().__init__(attribute_list,[relation],"Rename","N/A")
+        self.old_names_list = []
+        for a in attribute_list:
+            self.old_names_list.append(a.get_name())
+        super().__init__(attribute_list,[relation],"Rename","ALTER TABLE")
 
     # method transforming the SPJRUD expression to SQL expression
     # it checks if the attributes and relations are correct.
@@ -245,9 +236,50 @@ class Rename(Expression):
             if type(relation) in self.class_type_list:
                 relation.execute()
 
-        self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("'","").replace("\\","")
+        # create a "RENAME COLUMN old_name TO new_name" for each attribute
+        rename_to_list = []
+        x = 0
+        while x < len(self.attributes):
+            temp = f"RENAME COLUMN {self.attributes[x].get_name()} TO {self.new_names_list[x]}".replace("'","").replace("\"","")
+            rename_to_list.append(temp)
+            x+=1
+        
+        new_attributes = ",".join(rename_to_list)
+
+        self.sql_query = f"{self.QUERY_TYPE} {relation.get_name()} {new_attributes};".replace("'","").replace("\\","")
+        
+        #change the names of the local attributes as well ! 
+        x=0
+        while x < len(self.attributes):
+            self.attributes[x].name = self.new_names_list[x]
+            x+=1
 
         return self.sql_query
+
+    '''
+        This method is used to create the string representation of this class.
+        It uses a class_type_list since we're checking nested data within
+        @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
+    '''
+    def proper_str(self,class_type_l,wanted_expression):
+
+        old_att_name = []
+        new_att_name = []
+        rel_list = []
+
+        for a in self.old_names_list:
+            old_att_name.append(type_attribute_to_string_inside_expression(str(a),class_type_l))
+        for a in self.new_names_list:
+            new_att_name.append(type_attribute_to_string_inside_expression(str(a),class_type_l))
+        for r in self.relations:
+            rel_list.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
+
+        old_att_string = transform_list_to_goodString(old_att_name)
+        new_att_string = transform_list_to_goodString(new_att_name)
+        rel_string = transform_list_to_goodString(rel_list)
+
+        return f'{wanted_expression} {old_att_string} TO {new_att_string} FROM {rel_string}'
+       
 
 
 """
@@ -349,7 +381,7 @@ class Difference(Expression):
                 relation.execute(data_base)
         
 
-        self.sql_query = f"({Project([Attribute('*','',[])],self.r1).execute(data_base)}) MINUS ({Project([Attribute('*','',[])],self.r2).execute(data_base)})".replace("'","").replace("\\","")
+        self.sql_query = f"({Project([Attribute('*','',True,True,[])],self.r1).execute(data_base)}) MINUS ({Project([Attribute('*','',True,True,[])],self.r2).execute(data_base)})".replace("'","").replace("\\","")
 
         return self.sql_query
     

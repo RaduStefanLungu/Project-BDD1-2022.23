@@ -65,20 +65,22 @@ def print_sql(e):
 
 def testing_Expression_4():
 
-    a0 = Attribute("A0","TEXT",[])
-    a1 = Attribute("A1","TEXT",[])
-    a2 = Attribute("A2","TEXT",[])
-    a3 = Attribute("A3","TEXT",[])
-    a4 = Attribute("A4","TEXT",[])
-    a5 = Attribute("A5","TEXT",[])
-    a6 = Attribute("A6","TEXT",[])
+    a0 = Attribute("A0","TEXT",True,True,[])
+    a1 = Attribute("A1","TEXT",True,True,[])
+    a2 = Attribute("A2","TEXT",True,True,[])
+    a3 = Attribute("A3","TEXT",True,True,[])
+    a4 = Attribute("A4","TEXT",True,True,[])
+    a5 = Attribute("A5","TEXT",True,True,[])
+    a6 = Attribute("A6","TEXT",True,True,[])
 
     rel_1 = Relation("R1",[a0,a1,a2])
     rel_2 = Relation("R2",[a2,a3,a4])
     rel_3 = Relation("R3",[a5,a6])
 
-    db = DataBase([rel_1,rel_2])
+    db = DataBase([rel_1,rel_2],"N/A")
     db.print_meta()
+    # db.create_new_table("MyTableXXL",[a0,a1,a2])
+    
     print("\n")
 
 
@@ -112,7 +114,7 @@ def testing_Expression_4():
     print_sql(t.sql_query)
     print("\n")
 
-    t = Rename([],[])
+    t = Rename([a0,a1],["custom0","custom1"],rel_1)
     t.execute(db)
     print_spjrud(t)
     print_sql(t.sql_query)

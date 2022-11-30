@@ -37,6 +37,7 @@ class Expression(object):
         This method verifies if entered data as SPJRUD query is correct and if it checks within the database.
     '''
     def check_data(self):
+        #TODO
         pass
 
     def get_sql_query(self):
@@ -71,13 +72,14 @@ class Expression(object):
 
 # Tool Method
 def transform_list_to_goodString(myList):
-    t = str(tuple(myList))
+    t0 = []
+    for l in myList:
+        t0.append(str(l))
+    t = str(tuple(t0))
     if len(myList)== 1 :
             t = t[:len(t)-2]+")"
 
-    t = str(myList)
-    t = t.replace("\"", "")
-    t = t.replace("]","").replace("[","")
+    t = t.replace("]","").replace("[","").replace("\"", "").replace(")","").replace("(","")
     return t
 
 
@@ -166,8 +168,6 @@ class Join(Expression):
     # method transforming the SPJRUD expression to SQL expression
     # it checks if the attributes and relations are correct.
     def execute(self):
-        # transforms the expression as SQL querry and saves it inside self.sql_query
-        
         # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
 
         self.check_data()
@@ -258,4 +258,14 @@ class Union(Expression):
         return self.sql_query
     
     # Overwrite -> def proper_str(self,class_type_l,wanted_expression)
+
+    '''
+        This method is used to create the string representation of this class.
+        It uses a class_type_list since we're checking nested data within
+        @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
+    '''
+    def proper_str(self,class_type_l,wanted_expression):
+        well_written_str = transform_list_to_goodString(self.relations)
+        return f'{wanted_expression} {well_written_str} '
+
  

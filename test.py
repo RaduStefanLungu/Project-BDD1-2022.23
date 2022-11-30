@@ -57,6 +57,10 @@ def testing_Expression_3():
     print("expr1.execute().sql_query-->"+expr1.sql_query)
     print('\n\n')
 
+def testing_Expression_4():
+    pass
+
+
 def testing_SQLite():
     import sqlite3
 
@@ -65,7 +69,7 @@ def testing_SQLite():
     print("\nOpened database successfully!\n")
 
 
-
+    """
     # conn.execute('''CREATE TABLE COMPANY
     #             (ID INT PRIMARY KEY     NOT NULL,    
     #             NAME TEXT               NOT NULL,
@@ -111,7 +115,8 @@ def testing_SQLite():
 
 
     # cursor = conn.execute("SELECT id,name,age,address,salary from COMPANY")
-
+    """
+    
     x = Project(["id","name","age","address","salary"],"COMPANY")
     y = Project(["id","name","salary"],x)
 
@@ -126,7 +131,7 @@ def testing_SQLite():
     answear = input("---->>> ")
 
     cursor = None
-    if answear == "yes":
+    if answear == "yes" or answear=="y":
         cursor = conn.execute(relation.get_sql_query())  
     else:
         return -1
@@ -175,18 +180,21 @@ def testing_SQLite():
 
 
 if __name__=='__main__':
-    
-    testing_Expression_3()
+    print("\n-----START-----\n")
+
     testing_SQLite()
 
-    rel_1 = "R1"
-    rel_2 = "R2"
+    testing_Expression_4()
+
+    rel_1 = Relation("R1",[])
+    rel_2 = Relation("R2",[])
 
     t = Union(rel_1,rel_2)
     t.execute()
     print( t.sql_query )
     print(t)
 
+    print("\n------END------\n")
 
 
 

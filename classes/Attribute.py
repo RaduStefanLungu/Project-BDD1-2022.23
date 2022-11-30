@@ -5,10 +5,17 @@
         but also get_name() method exists.
 """
 class Attribute(object):
+    possible_data_type = ["INT","REAL","TEXT","CHAR"]
 
     def __init__(self,name:str,data_type:str,data_list):
         self.name = name
-        self.data_type = data_type.upper()
+        self.data_type = ""
+        if (data_type.upper().strip() in self.possible_data_type) or (data_type.upper().strip()[:4] in self.possible_data_type):
+            self.data_type = data_type.upper()
+        else:
+            #TODO
+            raise ValueError("\nN/A CALL CUSTOM ERRORS\n")
+
         self.data_list = data_list
 
     def get_name(self):

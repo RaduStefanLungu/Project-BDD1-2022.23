@@ -4,13 +4,24 @@
         aurez besoin pour afficher les messages d’erreur) ;
 --> Overwrite .execute() method in Join class
 --> Overwrite .proper_str(...) method in Union class
+--> config the general method check_data(self) of Expression Class 
 
 ============ 
 
 
 === TODO ===
 
---> config the general method check_data(self) of Expression Class 
+
+--> Implement Rename Class : 
+        -create new table with the given data (and new names)
+        -save that table in the LOCAL Data Base
+        -save that table in the .SQL Data Base
+
+--> Implement Error# classes. When called , those methods raise various errors:
+        -The inserted variable is not a Relation                            (be called in __init__)
+        -The inserted variable is not an Attribute                          (be called in __init__)
+        -The inserted Relation doesn't exist within the Data Base           (be called in check_data_)
+        -The inserted Attribute doesn't exist within the inserted relation  (be called in check_data_)
 
 ----> créer une nouvelle table à partir du résultat d’une requête ;
 ----> afficher le résultat d’une requête à l’écran
@@ -20,9 +31,7 @@
 2. Test each Expression class on test.db
 3. Think of creating an inside structure based on the fetched data
     of the .db file
-4. Create a way of manually chose what .db file the user wants
-    (if the .db file exists in the ./db directory)
-5. Create a way to manually chose what Tables to load
+4. (optional) Create a way to manually chose what Tables to load
     in the application
 
 ============

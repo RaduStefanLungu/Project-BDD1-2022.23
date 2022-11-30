@@ -1,6 +1,7 @@
 from classes.Requests import *
 from classes.Attribute import Attribute
 from classes.Relation import Relation
+from classes.DataBase import DataBase
 
 def testing_Expression_1():
     test = Expression(["A1","A2","A4"],["R"])
@@ -57,8 +58,66 @@ def testing_Expression_3():
     print("expr1.execute().sql_query-->"+expr1.sql_query)
     print('\n\n')
 
+def print_spjrud(e):
+    print(f"SPJRUD : {e}")
+def print_sql(e):
+    print(f"SQL    : {e}")
+
 def testing_Expression_4():
-    pass
+
+    a0 = Attribute("A0","TEXT",[])
+    a1 = Attribute("A1","TEXT",[])
+    a2 = Attribute("A2","TEXT",[])
+    a3 = Attribute("A3","TEXT",[])
+    a4 = Attribute("A4","TEXT",[])
+    a5 = Attribute("A5","TEXT",[])
+    a6 = Attribute("A6","TEXT",[])
+
+    rel_1 = Relation("R1",[a0,a1,a2])
+    rel_2 = Relation("R2",[a2,a3,a4])
+    rel_3 = Relation("R3",[a5,a6])
+
+    db = DataBase([rel_1,rel_2])
+    db.print_meta()
+    print("\n")
+
+
+    t = Select([a0,a1],["Joe","Marry"],"=",rel_1)
+    t.execute(db)
+    print_spjrud(t)
+    print_sql(t.sql_query)
+    print("\n")
+
+    t = Project([a0],rel_1)
+    t.execute(db)
+    print_spjrud(t)
+    print_sql(t.sql_query)
+    print("\n")
+
+    t = Join([rel_1,rel_2])
+    t.execute(db)
+    print_spjrud(t)
+    print_sql(t.sql_query)
+    print("\n")
+
+    t = Difference(rel_1,rel_2)
+    t.execute(db)
+    print_spjrud(t)
+    print_sql(t.sql_query)
+    print("\n")
+
+    t = Union(rel_1,rel_2)
+    t.execute(db)
+    print_spjrud(t)
+    print_sql(t.sql_query)
+    print("\n")
+
+    t = Rename([],[])
+    t.execute(db)
+    print_spjrud(t)
+    print_sql(t.sql_query)
+    print("\n")
+
 
 
 def testing_SQLite():
@@ -182,17 +241,8 @@ def testing_SQLite():
 if __name__=='__main__':
     print("\n-----START-----\n")
 
-    testing_SQLite()
-
+    # testing_SQLite()
     testing_Expression_4()
-
-    rel_1 = Relation("R1",[])
-    rel_2 = Relation("R2",[])
-
-    t = Union(rel_1,rel_2)
-    t.execute()
-    print( t.sql_query )
-    print(t)
 
     print("\n------END------\n")
 

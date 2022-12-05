@@ -67,7 +67,7 @@ def testing_Expression_4():
 
     a0 = Attribute("A0","TEXT",True,True,[])
     a1 = Attribute("A1","TEXT",True,True,[])
-    a2 = Attribute("A2","TEXT",True,True,[])
+    a2 = Attribute("A2","INT",True,True,[])
     a3 = Attribute("A3","TEXT",True,True,[])
     a4 = Attribute("A4","TEXT",True,True,[])
     a5 = Attribute("A5","TEXT",True,True,[])

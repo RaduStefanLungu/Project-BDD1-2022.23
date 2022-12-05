@@ -62,4 +62,5 @@ class DataBase(object):
         self.relations_list.append(Relation(table_name,attributes_list))
 
     def __str__(self):
+        #TODO
         pass

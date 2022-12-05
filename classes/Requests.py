@@ -1,23 +1,43 @@
 from classes.Relation import Relation
 from classes.Attribute import Attribute
-#Colors taken from AINSI CODE from : https://www.geeksforgeeks.org/print-colors-python-terminal/
+from classes.CustomErrors import *
 
-code_reset = "\033[00m"
-code_red = "\033[91m"
-code_green = "\033[92m"
-code_yellow = "\033[93m"
-code_light_purple = "\033[94m"
-code_purple = "\033[95m"
-code_cyan = "\033[96m"
-code_light_gray = "\033[97m"
+
+#### Tool Methods ####
+
+"""
+    Method used to transform a list in proper string by stripping every paranthesis.
+    @return String containing the content of the given list.
+"""
+def transform_list_to_goodString(myList):
+    t0 = []
+    for l in myList:
+        t0.append(str(l))
+    t = str(tuple(t0))
+    if len(myList)== 1 :
+            t = t[:len(t)-2]+")"
+
+    t = t.replace("]","").replace("[","").replace("\"", "").replace(")","").replace("(","")
+    return t
+
+"""
+    Method writing in sql format the given attribute.
+    @return String of sql query.
+"""
+def type_attribute_to_string_inside_expression(myAttribute,class_type_list):
+
+    if type(myAttribute) in class_type_list :
+        return "( "+myAttribute.sql_query+" )"
+    else:
+        return str(myAttribute)
+
+
+######################
 
 
 class Expression(object):
     
     def __init__(self,attribute_list,relation_list,SPJRUD_type:str,QUERY_TYPE:str):
-
-        # if attribute_list === ["all"] <=> *  example : Select * from relation_list
-
         self.attributes = attribute_list
         self.relations = relation_list
         self.SPJRUD_type:str = SPJRUD_type
@@ -26,12 +46,13 @@ class Expression(object):
         self.sql_query = "- ! You forgot to use execute() method ! -"     # ment to be send to SQLite DB after usage of execute()
         self.class_type_list = [Expression,Select,Project,Rename,Join,Difference,Union] # list of children class types * MUST BE UPDATED FOR EVERY NEW CHILDREN IN THE CODE ! *
     
-    # method transforming the SPJRUD expression to SQL expression
-    # it checks if the attributes and relations are correct.
+
+    """
+        Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
+        When completed, this method will execute the right query on the given data base.
+        To acess that query use <expression>.get_sql_query().
+    """
     def execute(self,data_base):
-        # transforms the expression as SQL querry and saves it inside self.sql_query
-        
-        # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
         self.check_data(data_base)
 
         for attribute in self.attributes:
@@ -43,7 +64,14 @@ class Expression(object):
 
         self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("'","").replace("\\","")
 
+        self.execute_on_db(self.sql_query)
         return self.sql_query
+
+    """
+        Method that will execute the  sql query on the given data base.
+    """
+    def execute_on_db(self,db):
+        db.execute_query(self.sql_query)
 
     '''
         This method verifies if entered data as SPJRUD query is correct and if it checks within the database.
@@ -60,14 +88,9 @@ class Expression(object):
         @return True if everything is ok, raises ValueError if not.
     """
     def check_data_relations(self,data_base):
-        #checking the relations
         for r in self.relations:
             if r.get_name() not in data_base.relations_list_name:
-                raise ValueError(f"""
-                The (sub-)expression:
-                | {str(self)} | is {code_red}invalid{code_reset} because {code_purple}{r}{code_reset} doesn't exist in the database.
-                {code_green}Please verify your relations{code_reset}
-                """)
+                raise RelationNotInDBError(self,r.get_name())
     
     """
         Method called inside check_data(...).
@@ -85,11 +108,7 @@ class Expression(object):
                     checker=True
 
             if not checker:
-                raise ValueError(f"""
-                The (sub-)expression:
-                | {str(self)} | is {code_red}invalid{code_reset} because the attribute {code_cyan}{a}{code_reset} doesn't exist within the given relation {code_purple}{self.relations[0]}{code_reset}.
-                {code_green}Please verify your attributes{code_reset}
-                """)
+                raise AttributeNotInRelationError(self,a)
         
 
     def get_sql_query(self):
@@ -101,8 +120,6 @@ class Expression(object):
         @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
     '''
     def proper_str(self,class_type_l,wanted_expression):
-        # Prints the Expression as example: 
-        # Select ['A0','A1'] from ["Relation"]
 
         attList = []
         relList = []
@@ -117,41 +134,10 @@ class Expression(object):
 
         return f'{wanted_expression} {attString} FROM {relString} {self.other_query_addons}'
         
-
-
     def __str__(self):
         return self.proper_str(self.class_type_list,self.SPJRUD_type)
         
 
-# Tool Method
-"""
-    Method used to transform a list in proper string by stripping every paranthesis.
-    @return String containing the content of the given list.
-"""
-def transform_list_to_goodString(myList):
-    t0 = []
-    for l in myList:
-        t0.append(str(l))
-    t = str(tuple(t0))
-    if len(myList)== 1 :
-            t = t[:len(t)-2]+")"
-
-    t = t.replace("]","").replace("[","").replace("\"", "").replace(")","").replace("(","")
-    return t
-
-
-# Tool Method
-# method that writes in sql format the given attribute
-"""
-    Method writing in sql format the given attribute.
-    @return String of sql query.
-"""
-def type_attribute_to_string_inside_expression(myAttribute,class_type_list):
-
-    if type(myAttribute) in class_type_list :
-        return "( "+myAttribute.sql_query+" )"
-    else:
-        return str(myAttribute)
 
 
 """
@@ -161,8 +147,7 @@ class Select(Expression):
 
     def __init__(self,attributes_list,wanted_values_list,operation:str,relation):
         if len(attributes_list) != len(wanted_values_list):
-            raise ValueError("Invalid number of attributes/wanted_values")
-        # other_query_addons = self.create_query_addon(attributes_list,wanted_values_list,operation)
+            raise InvalidNumberOfVariablesError("attributes/wanted values")
         
         super().__init__(attributes_list,[relation],"Select","Select")
 
@@ -172,7 +157,7 @@ class Select(Expression):
         self.wanted_values_list = wanted_values_list
         self.operation = ""
         if operation.strip() not in self.accepted_operations:
-            raise ValueError(f"Invalid operation {code_red}{operation}{code_reset} \n accepted operations : {code_green}{self.accepted_operations}{code_reset}")
+            raise InvalidOperationError(operation,self.accepted_operations)
         else:
             self.operation = operation.strip()
 
@@ -226,11 +211,15 @@ class Rename(Expression):
             self.old_names_list.append(a.get_name())
         super().__init__(attribute_list,[relation],"Rename","ALTER TABLE")
 
-    # method transforming the SPJRUD expression to SQL expression
-    # it checks if the attributes and relations are correct.
+    """
+        Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
+        When completed, this method will execute the right query on the given data base.
+        To acess that query use <expression>.get_sql_query().
+    """
     def execute(self,data_base):
 
         self.check_data(data_base)
+        self.check_attributes_name_or_type()
 
         for relation in self.relations:
             if type(relation) in self.class_type_list:
@@ -254,7 +243,32 @@ class Rename(Expression):
             self.attributes[x].name = self.new_names_list[x]
             x+=1
 
+        self.execute_on_db(self.sql_query)
         return self.sql_query
+
+    """
+        Method checking if the newly named attributes respect data types.
+        @return True if the data types are respected
+    """
+    def check_attributes_name_or_type(self):
+        def get_attribute_by_name(n,attribute_list):
+            for a in attribute_list:
+                if a.get_name() == n:
+                    return a
+        def get_all_names_from_attributes(a_list):
+            my_names = []
+            for a in a_list:
+                my_names.append(a.get_name())
+            return my_names
+
+        all_attributes_names = get_all_names_from_attributes(self.relations[0].get_attributes_list())
+
+        for index in range(len(self.new_names_list)):
+            if self.new_names_list[index] in all_attributes_names:
+                if get_attribute_by_name(self.old_names_list[index],self.attributes).get_data_type() != get_attribute_by_name(self.new_names_list[index],self.relations[0].get_attributes_list()).get_data_type():
+                    raise InvalidNewAttributeTypeOnNameChangeError(get_attribute_by_name(self.old_names_list[index],self.attributes),get_attribute_by_name(self.new_names_list[index],self.relations[0].get_attributes_list()))
+        return True
+
 
     '''
         This method is used to create the string representation of this class.
@@ -286,30 +300,22 @@ class Rename(Expression):
     Class used to define Join query from SPJRUD format.
 """
 class Join(Expression):
-    #TODO before joining check if the relations have commun atributes
-    #so you don't fully join
     def __init__(self, relations_list):
         super().__init__([],relations_list,"Join","Union")
         for r in relations_list:
             if type(r) is not Relation:
-                raise ValueError(f"""
-                The (sub-)expression:
-                | {str(self)} | is {code_red}invalid{code_reset} because {code_yellow}{r}{code_reset} is not a {code_purple}relation{code_reset}.
-                {code_green}Please verify your relations{code_reset}
-                """)
+                raise InvalidRelationType(self,r)
     
     def check_data(self, data_base):
         self.check_data_relations(data_base)
-        
     
-    # SPJRUD : Union R1,R2
-    # SQL : (SELECT * FROM R) UNION (SELECT * FROM R)   
 
-    # method transforming the SPJRUD expression to SQL expression
-    # it checks if the attributes and relations are correct.
+    """
+        Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
+        When completed, this method will execute the right query on the given data base.
+        To acess that query use <expression>.get_sql_query().
+    """
     def execute(self,data_base):
-        # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
-
         self.check_data(data_base)
 
         for relation in self.relations:
@@ -326,6 +332,7 @@ class Join(Expression):
 
         self.sql_query = " UNION ".join(select_query_per_relation).replace("'","").replace("\\","")
 
+        self.execute_on_db(self.sql_query)
         return self.sql_query
     
 
@@ -335,9 +342,6 @@ class Join(Expression):
      @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
     '''
     def proper_str(self,class_type_l,wanted_expression):
-        # Prints the Expression as example: 
-        # Select ['A0','A1'] from ["Relation"]
-
         relList = []
 
         for r in self.relations:
@@ -356,23 +360,19 @@ class Difference(Expression):
         temp = [r1,r2]
         for r in temp:
             if type(r) is not Relation:
-                raise ValueError(f"""
-                The (sub-)expression:
-                | {str(self)} | is {code_red}invalid{code_reset} because {code_yellow}{r}{code_reset} is not a {code_purple}relation{code_reset}.
-                {code_green}Please verify your relations{code_reset}
-                """)
+                raise InvalidRelationType(self,r)
         self.r1 = r1
         self.r2 = r2
         
     def check_data(self, data_base):
         self.check_data_relations(data_base)
 
-    # method transforming the SPJRUD expression to SQL expression
-    # it checks if the attributes and relations are correct.
+    """
+        Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
+        When completed, this method will execute the right query on the given data base.
+        To acess that query use <expression>.get_sql_query().
+    """
     def execute(self,data_base):
-        # transforms the expression as SQL querry and saves it inside self.sql_query
-        
-        # TODO Before it saves itself to self.sql_query , DO THE CHECKING(from the db) + Error manager!!
 
         self.check_data(data_base)
 
@@ -383,13 +383,11 @@ class Difference(Expression):
 
         self.sql_query = f"({Project([Attribute('*','',True,True,[])],self.r1).execute(data_base)}) MINUS ({Project([Attribute('*','',True,True,[])],self.r2).execute(data_base)})".replace("'","").replace("\\","")
 
+        self.execute_on_db(self.sql_query)
         return self.sql_query
     
 
     def proper_str(self,class_type_l,wanted_expression):
-        # Prints the Expression as example: 
-        # Select ['A0','A1'] from ["Relation"]
-
         return f'{wanted_expression} {transform_list_to_goodString(self.relations)} {self.other_query_addons}'
 
 
@@ -403,25 +401,22 @@ class Union(Expression):
         self.r1 = r1
         self.r2 = r2
         temp = [r1,r2]
+        super().__init__([],[r1,r2],"Union","Union")
         for r in temp:
             if type(r) is not Relation:
-                raise ValueError(f"""
-                The (sub-)expression:
-                | {str(self)} | is {code_red}invalid{code_reset} because {code_yellow}{r}{code_reset} is not a {code_purple}relation{code_reset}.
-                {code_green}Please verify your relations{code_reset}
-                """)
-        super().__init__([],[r1,r2],"Union","Union")
+                raise InvalidRelationType(self,r)
+        
 
-    
+    """
+        Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
+        When completed, this method will execute the right query on the given data base.
+        To acess that query use <expression>.get_sql_query().
+    """
     def execute(self,data_base):
-        #check if r1,r2 have the EXACT same attributes
-        # self.union_check_data(...)
-        #execute Join([r1,r2])
         self.sql_query = Join([self.r1,self.r2]).execute(data_base)
 
+        self.execute_on_db(self.sql_query)
         return self.sql_query
-    
-    # Overwrite -> def proper_str(self,class_type_l,wanted_expression)
 
     '''
         This method is used to create the string representation of this class.

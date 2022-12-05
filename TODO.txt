@@ -10,18 +10,18 @@
 1. Finish implementation of each Expression class (./classes/Requests.py)
 2. Test each Expression class on test.db
 
-
-============ 
-
-
-=== TODO ===
-
-
 --> Implement Error# classes. When called , those methods raise various errors:
         -The inserted variable is not a Relation                            (be called in __init__)
         -The inserted variable is not an Attribute                          (be called in __init__)
         -The inserted Relation doesn't exist within the Data Base           (be called in check_data_)
         -The inserted Attribute doesn't exist within the inserted relation  (be called in check_data_)
+
+============
+
+
+=== TODO ===
+
+
 
 ----> créer une nouvelle table à partir du résultat d’une requête ;
 ----> afficher le résultat d’une requête à l’écran

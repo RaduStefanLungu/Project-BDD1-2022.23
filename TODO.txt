@@ -16,19 +16,21 @@
         -The inserted Relation doesn't exist within the Data Base           (be called in check_data_)
         -The inserted Attribute doesn't exist within the inserted relation  (be called in check_data_)
 
+----> afficher le résultat d’une requête à l’écran
+3. Think of creating an inside structure based on the fetched data
+    of the .db file
 ============
 
 
 === TODO ===
 
+---->> CHECK THE UNION AND JOIN METHODS ! THEY NO GOOD @@@@@
 
 
 ----> créer une nouvelle table à partir du résultat d’une requête ;
-----> afficher le résultat d’une requête à l’écran
 
 
-3. Think of creating an inside structure based on the fetched data
-    of the .db file
+
 4. (optional) Create a way to manually chose what Tables to load
     in the application
 

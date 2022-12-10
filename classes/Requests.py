@@ -34,7 +34,9 @@ def type_attribute_to_string_inside_expression(myAttribute,class_type_list):
 
 ######################
 
-
+"""
+    Parent class defining SPRJUD expressions.
+"""
 class Expression(object):
     
     def __init__(self,attribute_list,relation_list,SPJRUD_type:str,QUERY_TYPE:str):
@@ -57,14 +59,13 @@ class Expression(object):
 
         for attribute in self.attributes:
             if type(attribute) in self.class_type_list:
-                attribute.execute()
+                attribute.execute(data_base)
         for relation in self.relations:
             if type(relation) in self.class_type_list:
-                relation.execute()
+                relation.execute(data_base)
 
         self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("'","").replace("\\","")
 
-        self.execute_on_db(self.sql_query)
         return self.sql_query
 
     """
@@ -88,8 +89,9 @@ class Expression(object):
         @return True if everything is ok, raises ValueError if not.
     """
     def check_data_relations(self,data_base):
+        return 1
         for r in self.relations:
-            if r.get_name() not in data_base.relations_list_name:
+            if type(r) in self.class_type_list and r.get_name() not in data_base.relations_list_name:
                 raise RelationNotInDBError(self,r.get_name())
     
     """
@@ -132,7 +134,7 @@ class Expression(object):
         attString = transform_list_to_goodString(attList)
         relString = transform_list_to_goodString(relList)
 
-        return f'{wanted_expression} {attString} FROM {relString} {self.other_query_addons}'
+        return f'{wanted_expression} {attString} FROM {relString}{self.other_query_addons}'
         
     def __str__(self):
         return self.proper_str(self.class_type_list,self.SPJRUD_type)
@@ -149,7 +151,7 @@ class Select(Expression):
         if len(attributes_list) != len(wanted_values_list):
             raise InvalidNumberOfVariablesError("attributes/wanted values")
         
-        super().__init__(attributes_list,[relation],"Select","Select")
+        super().__init__(attributes_list,[relation],"Select","SELECT")
 
         self.other_query_addons = self.create_query_addon(attributes_list,wanted_values_list,operation)
 
@@ -167,7 +169,7 @@ class Select(Expression):
 
     '''
     def create_query_addon(self,att_list,wanted_values,operation:str):
-        query_addon = "WHERE "
+        query_addon = " WHERE "
         left_constructor = []
         types_list = self.class_type_list
         x = 0
@@ -197,7 +199,7 @@ class Select(Expression):
 """
 class Project(Expression):
     def __init__(self,attribute_list,relation):
-        super().__init__(attribute_list,[relation],"Project","Select")
+        super().__init__(attribute_list,[relation],"Project","SELECT")
 
 
 """
@@ -223,7 +225,7 @@ class Rename(Expression):
 
         for relation in self.relations:
             if type(relation) in self.class_type_list:
-                relation.execute()
+                relation.execute(data_base)
 
         # create a "RENAME COLUMN old_name TO new_name" for each attribute
         rename_to_list = []
@@ -243,7 +245,6 @@ class Rename(Expression):
             self.attributes[x].name = self.new_names_list[x]
             x+=1
 
-        self.execute_on_db(self.sql_query)
         return self.sql_query
 
     """
@@ -301,10 +302,10 @@ class Rename(Expression):
 """
 class Join(Expression):
     def __init__(self, relations_list):
-        super().__init__([],relations_list,"Join","Union")
-        for r in relations_list:
-            if type(r) is not Relation:
-                raise InvalidRelationType(self,r)
+        super().__init__([],relations_list,"Join","INNER JOIN")
+        # for r in relations_list:
+        #     if type(r) is not Relation:
+        #         raise InvalidRelationType(self,r)
     
     def check_data(self, data_base):
         self.check_data_relations(data_base)
@@ -320,19 +321,29 @@ class Join(Expression):
 
         for relation in self.relations:
             if type(relation) in self.class_type_list:
-                relation.execute()
+                relation.execute(data_base)
         
         if len(self.relations)== 2 :
-            self.sql_query = f"(SELECT * FROM {str(self.relations[0])}) UNION (SELECT * FROM {str(self.relations[1])}) ".replace("'","").replace("\\","")
+            all_halvs_of_query = []
+            for relation in self.relations:
+                if type(relation) in self.class_type_list:
+                    all_halvs_of_query.append(f"{relation.sql_query}")
+                else:
+                    all_halvs_of_query.append(f"SELECT * FROM {relation.get_name()}")
+            # self.sql_query = f"(SELECT * FROM {str(self.relations[0])}) UNION (SELECT * FROM {str(self.relations[1])}) ".replace("'","").replace("\\","")
+
+            self.sql_query = " INNER JOIN ".join(all_halvs_of_query).replace("'","").replace("\\","")
             return self.sql_query
 
         select_query_per_relation = []
         for relation in self.relations:
-            select_query_per_relation.append(f"(SELECT * FROM {str(relation)})")
+            if type(relation) in self.class_type_list:
+                select_query_per_relation.append(f"{relation.sql_query}")    
+            else:
+                select_query_per_relation.append(f"SELECT * FROM {relation.get_name()}")
 
-        self.sql_query = " UNION ".join(select_query_per_relation).replace("'","").replace("\\","")
+        self.sql_query = " INNER JOIN ".join(select_query_per_relation).replace("'","").replace("\\","")
 
-        self.execute_on_db(self.sql_query)
         return self.sql_query
     
 
@@ -356,7 +367,7 @@ class Join(Expression):
 """
 class Difference(Expression):
     def __init__(self, r1,r2):
-        super().__init__([],[r1,r2],"Difference","Minus")
+        super().__init__([],[r1,r2],"Difference","MINUS")
         temp = [r1,r2]
         for r in temp:
             if type(r) is not Relation:
@@ -383,7 +394,6 @@ class Difference(Expression):
 
         self.sql_query = f"({Project([Attribute('*','',True,True,[])],self.r1).execute(data_base)}) MINUS ({Project([Attribute('*','',True,True,[])],self.r2).execute(data_base)})".replace("'","").replace("\\","")
 
-        self.execute_on_db(self.sql_query)
         return self.sql_query
     
 
@@ -401,10 +411,10 @@ class Union(Expression):
         self.r1 = r1
         self.r2 = r2
         temp = [r1,r2]
-        super().__init__([],[r1,r2],"Union","Union")
-        for r in temp:
-            if type(r) is not Relation:
-                raise InvalidRelationType(self,r)
+        super().__init__([],[r1,r2],"Union","CROSS JOIN")
+        # for r in temp:
+        #     if type(r) is not Relation:
+        #         raise InvalidRelationType(self,r)
         
 
     """
@@ -413,9 +423,23 @@ class Union(Expression):
         To acess that query use <expression>.get_sql_query().
     """
     def execute(self,data_base):
-        self.sql_query = Join([self.r1,self.r2]).execute(data_base)
+        # self.sql_query = Join([self.r1,self.r2]).execute(data_base)
+        #must be checked?
 
-        self.execute_on_db(self.sql_query)
+        self.check_data(data_base)
+
+        for relation in self.relations:
+            if type(relation) in self.class_type_list:
+                relation.execute(data_base)
+        
+        elements = []
+        for relation in self.relations:
+            if type(relation) in self.class_type_list:
+                elements.append(f"{relation.sql_query}")
+            else:
+                elements.append(f"{relation.get_name()}")
+        self.sql_query = f" {self.QUERY_TYPE} ".join(elements).replace("'","").replace("\\","")
+
         return self.sql_query
 
     '''

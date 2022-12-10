@@ -32,7 +32,7 @@ class Attribute(object):
         return self.data_list
 
     def get_info(self):
-        return "Attribute: '"+self.name+"'" + "_____" + self.data_type
+        return f"Attribute: '{self.name}'_____{self.data_type}_____NOT NULL:{self.not_null}"
 
     def print_meta(self):
         print(f"Attribute({self.name}) of type {self.data_type}")

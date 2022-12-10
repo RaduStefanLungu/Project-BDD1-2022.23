@@ -18,7 +18,7 @@ class Relation(object):
         return self.attributes_list
 
     def print_meta(self):
-        print(f"Relation({self.name}) contains {self.attributes_list}")
+        print(f"Relation({self.name}) contains : {str(self.attributes_list)}")
 
     def __str__ (self):
         return self.name

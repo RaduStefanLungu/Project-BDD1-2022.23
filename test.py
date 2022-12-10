@@ -121,6 +121,33 @@ def testing_Expression_4():
     print("\n")
 
 
+def testing_SQLite_3():
+    import sqlite3
+    my_db = DataBase([],sqlite3.connect('./db/test.db'))
+    my_db.fetch_data_from_connection()
+    my_db.print_meta()
+
+    e = Project([Attribute("*","",1,1,[])],my_db.get_relations()[0])
+    e.execute(my_db)
+
+    e1 = Select([Attribute("NAME","TEXT",1,1,[])],["Paul"],"=",my_db.get_relations()[0])
+    e1.execute(my_db)
+
+def testing_SQLite_2():
+    import sqlite3
+
+    conn = sqlite3.connect('./db/test.db')
+    
+    my_db = DataBase([],conn)
+    my_db.fetch_data_from_connection()
+    my_db.print_meta()
+
+    # print(conn.execute('PRAGMA table_info("Company")').fetchall())
+
+    for x in my_db.relations_list:
+        print("-"+str(x))
+        for a in x.attributes_list:
+            print(a)
 
 def testing_SQLite():
     import sqlite3
@@ -177,12 +204,14 @@ def testing_SQLite():
 
     # cursor = conn.execute("SELECT id,name,age,address,salary from COMPANY")
     """
-    
+
+    my_db = DataBase([],conn)
+
     x = Project(["id","name","age","address","salary"],"COMPANY")
     y = Project(["id","name","salary"],x)
 
     relation = x
-    relation.execute()
+    relation.execute(my_db)
     print(relation)
     print(relation.sql_query)
     print("""
@@ -243,8 +272,8 @@ def testing_SQLite():
 if __name__=='__main__':
     print("\n-----START-----\n")
 
-    # testing_SQLite()
-    testing_Expression_4()
+    testing_SQLite_3()
+    # testing_Expression_4()
 
     print("\n------END------\n")
 

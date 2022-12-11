@@ -272,8 +272,28 @@ def testing_SQLite():
 if __name__=='__main__':
     print("\n-----START-----\n")
 
-    testing_SQLite_3()
+    # testing_SQLite_3()
     # testing_Expression_4()
+
+    # import sqlite3
+    # conn = sqlite3.connect('./db/test.sqlite')
+
+    # # conn.execute('''CREATE TABLE EMPLOYEES
+    # #             (ID INT PRIMARY KEY     NOT NULL,    
+    # #             NAME TEXT               NOT NULL,
+    # #             EMAIL TEXT                 NOT NULL,
+    # #             HOME_ADDRESS CHAR(50)        NOT NULL);''')
+    # # print("table created successfully!\n")
+
+    # conn.execute("INSERT INTO EMPLOYEES (ID,NAME,EMAIL,HOME_ADDRESS) \
+    #       VALUES (1, 'Paul','paul_gica@gmail.com', 'Rue de la Tombe 20')");
+    # conn.execute("INSERT INTO EMPLOYEES (ID,NAME,EMAIL,HOME_ADDRESS) \
+    #       VALUES (2, 'Allen','allen_maiden@gmail.com', 'Rue de la MishMish 1')");
+    # conn.execute("INSERT INTO EMPLOYEES (ID,NAME,EMAIL,HOME_ADDRESS) \
+    #       VALUES (3, 'Teddy','teddy_the_bear@hotmail.com', 'Avenue du Miel 99')");
+    # conn.execute("INSERT INTO EMPLOYEES (ID,NAME,EMAIL,HOME_ADDRESS) \
+    #       VALUES (4, 'Mark','mark_le_camataire@yahoo.com', 'Rue de ouest 45')");
+    # conn.commit()
 
     print("\n------END------\n")
 

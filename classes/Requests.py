@@ -79,8 +79,9 @@ class Expression(object):
     '''
     def check_data(self,data_base):
         
-        self.check_data_relations(data_base)
-        self.check_data_attributes()
+        # self.check_data_relations(data_base)
+        # self.check_data_attributes()
+        pass
         
 
     """

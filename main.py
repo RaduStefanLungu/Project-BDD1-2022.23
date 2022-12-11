@@ -3,7 +3,7 @@ from classes.Relation import Relation
 from classes.Requests import *
 from classes.DataBase import DataBase
 
-
+"""
 def main():
     import sqlite3
 
@@ -39,16 +39,54 @@ def main():
     #
     #
     # You can even use composed querries:
-    e20 = Project([Attribute("SALARY","TEXT",0,1,[])],my_db.get_relations()[0])
-    e21 = Project([Attribute("NAME","TEXT",0,1,[]),Attribute("ADDRESS","TEXT",0,1,[])],my_db.get_relations()[1])
-    e2 = Union(e20,my_db.get_relations()[1])
-    e2.execute(my_db)
-    print(e2.sql_query)
-    e2.execute_on_db(my_db)
+    e200 = Select([Attribute("SALARY","TEXT",0,1,[])],["2000"],"=",my_db.get_relations()[0])
+    e201 = Project([Attribute("SALARY","TEXT",0,1,[])],e200)
+
+    e200.execute(my_db)
+    e200.execute_on_db(my_db)
+
+    
+
+    # e201.execute(my_db)
+    # print(e201.sql_query)
+    # e201.execute_on_db(my_db)
+
+
+    # e20 = Project([Attribute("SALARY","TEXT",0,1,[])],my_db.get_relations()[0])
+    # e21 = Project([Attribute("NAME","TEXT",0,1,[]),Attribute("ADDRESS","TEXT",0,1,[])],my_db.get_relations()[1])
+    # e2 = Union(e20,my_db.get_relations()[1])
+    # e2.execute(my_db)
+    # print(e2.sql_query)
+    # e2.execute_on_db(my_db)"""
 
 if __name__=='__main__':
     print("\n-----START-----\n")
 
-    main()
+    # main()
+    import sqlite3
+    my_db = DataBase(sqlite3.connect('./db/test.sqlite'))
+    my_db.fetch_data_from_connection()
+
+    my_db.print_meta()
+
+
+    company = my_db.get_relations()[0]
+    departments = my_db.get_relations()[1]
+    employees = my_db.get_relations()[2]
+
+    all = Attribute("*","TEXT",0,0,[])
+    q0 = Project([all],employees)
+    q0.execute(my_db)
+    q0.execute_on_db(my_db)
+
+    att_salary = Attribute("SALARY","TEXT",0,0,[])
+    q1 = Select([att_salary],[20000],"=",company)
+    q1.execute(my_db)
+    print(q1.sql_query)
+    q1.execute_on_db(my_db)
+
+    cursor = my_db.connection.cursor()
+    cursor.execute("SELECT * from COMPANY WHERE SALARY < ? ",(50000,))
+    print(cursor.fetchall())
 
     print("\n------END------\n")

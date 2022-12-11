@@ -25,6 +25,7 @@
 === TODO ===
 
 ---->> CHECK THE UNION AND JOIN METHODS ! THEY NO GOOD @@@@@
+---->> CHECK THE SELECT METHODS ! THEY NO GOOD @@@@@
 
 
 ----> créer une nouvelle table à partir du résultat d’une requête ;

@@ -80,13 +80,68 @@ if __name__=='__main__':
     q0.execute_on_db(my_db)
 
     att_salary = Attribute("SALARY","TEXT",0,0,[])
-    q1 = Select([att_salary],[20000],"=",company)
+    att_address = Attribute("ADDRESS","TEXT",0,0,[])
+    q1 = Select([all],[att_salary],"=",[20000],company)
     q1.execute(my_db)
     print(q1.sql_query)
     q1.execute_on_db(my_db)
 
-    cursor = my_db.connection.cursor()
-    cursor.execute("SELECT * from COMPANY WHERE SALARY < ? ",(50000,))
-    print(cursor.fetchall())
+    att_salary = Attribute("SALARY","TEXT",0,0,[])
+    att_address = Attribute("ADDRESS","TEXT",0,0,[])
+    att_name = Attribute("NAME","TEXT",0,0,[])
+    q11 = Select([att_salary,att_name,att_address],[att_name],"=",["Paul"],q1)
+    # q11.execute(my_db)
+    # print(q11.sql_query)
+    # q11.execute_on_db(my_db)
 
-    print("\n------END------\n")
+
+    # print("\n")
+    # att_ = Attribute("NAME","TEXT",0,0,[])
+    # q2 = Project([att_salary],q1)
+    # q2.execute(my_db)
+    # print(q2.sql_query)
+    # q2.execute_on_db(my_db)
+
+
+    print("\n\n")
+
+    att_ = Attribute("NAME","TEXT",0,0,[])
+    q2 = Join([departments,q1])
+    q2.execute(my_db)
+    print(q2.sql_query)
+    q2.execute_on_db(my_db)
+
+
+    # print("\n\n")
+
+    # r1 = Select([all],[att_salary],">",[20000],company)
+    # r2 = Select([all],[att_name],"=",["Paul"],company)
+    # q2 = Union(r1,r2)
+    # q2.execute(my_db)
+    # print(q2.sql_query)
+    # q2.execute_on_db(my_db)
+
+    print("\n\n")
+
+    r1 = Select([all],[att_salary],">=",[20000],company)
+    r2 = Select([all],[att_name],"=",["Paul"],company)
+    q2 = Difference(company,r1)
+    q2.execute(my_db)
+    print(q2.sql_query)
+    q2.execute_on_db(my_db)
+    
+
+    # print('\n\n')
+
+    # cursor = my_db.connection.cursor()
+    # cursor.execute("SELECT * FROM company WHERE salary>=20000 EXCEPT SELECT * FROM company WHERE name='Paul'")
+    # print(cursor.fetchall())
+
+    # print("\n------END------\n")
+
+
+"""
+    Example of Union/Join (produit des rows) : SELECT * FROM COMPANY CROSS JOIN EMPLOYEES ON company.name = employees.name (encore pire si on enelve company.name = employees.name)
+    Example of Select : SELECT * FROM COMPANY WHERE salary > 20000 
+    Example of Project : SELECT DISTINCT * FROM COMPANY
+"""

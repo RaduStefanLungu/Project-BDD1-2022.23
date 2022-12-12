@@ -5,7 +5,7 @@
         but also get_name() method exists.
 """
 class Attribute(object):
-    possible_data_type = ["INT","REAL","TEXT","CHAR"]
+    possible_data_type = ["TEXT","NUMERIC","INT","FLOAT","REAL","BLOB","CHAR"]
 
     def __init__(self,name:str,data_type:str,primary_key:bool,not_null:bool,data_list):
         self.primary_key = primary_key

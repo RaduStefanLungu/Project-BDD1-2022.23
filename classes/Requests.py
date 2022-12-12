@@ -16,8 +16,8 @@ def transform_list_to_goodString(myList):
     t = str(tuple(t0))
     if len(myList)== 1 :
             t = t[:len(t)-2]+")"
-
-    t = t.replace("]","").replace("[","").replace("\"", "").replace(")","").replace("(","")
+    #TODO CHANGED HERE !!!!!
+    t = t.replace("]","").replace("[","").replace("\"", "").replace(")","").replace("(","").replace("<","(").replace(">",")")
     return t
 
 """
@@ -64,9 +64,43 @@ class Expression(object):
             if type(relation) in self.class_type_list:
                 relation.execute(data_base)
 
-        self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("'","").replace("\\","")
+
+        #TODO CHANGED HERE !!
+        self.sql_query = self.proper_str(self.class_type_list,self.QUERY_TYPE).replace("\\","")
 
         return self.sql_query
+
+
+    '''
+        This method is used to create the string representation of this class.
+        It uses a class_type_list since we're checking nested data within
+        @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
+    '''
+    def proper_str(self,class_type_l,wanted_expression):
+
+        attList = []
+        relList = []
+
+        for a in self.attributes:
+            attList.append(type_attribute_to_string_inside_expression(str(a),class_type_l))
+
+        #TODO CHANGED HERE !!
+        for r in self.relations:
+            #TODO CHANGED HERE !!!!!
+            if type(r) in self.class_type_list:
+                relList.append(f"<{type_attribute_to_string_inside_expression(r.sql_query,class_type_l)}>")
+            else:
+                relList.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
+
+        attString = transform_list_to_goodString(attList)
+        relString = transform_list_to_goodString(relList)
+
+
+        #TODO CHANGED HERE !!
+        left_side_query = f'{wanted_expression} {attString} FROM {relString}'.replace("'","")
+        return f"{left_side_query}{self.other_query_addons}"
+        
+
 
     """
         Method that will execute the  sql query on the given data base.
@@ -79,17 +113,27 @@ class Expression(object):
     '''
     def check_data(self,data_base):
         
-        # self.check_data_relations(data_base)
+        self.check_data_relations(data_base)
         # self.check_data_attributes()
         pass
         
-
     """
         Method called inside check_data(...).
         Used to check if the given relations of a query exists within the data base.
         @return True if everything is ok, raises ValueError if not.
     """
     def check_data_relations(self,data_base):
+        for r in self.relations:
+            if type(r) is not Relation and (type(r) is not self.class_type_list):
+                raise InvalidRelationType(self,r)
+            exist_in_db = False
+            for db_r in data_base.get_relations():
+                if db_r.get_name() is r.get_name():
+                    exist_in_db=True
+            
+            if not exist_in_db:
+                raise RelationNotInDBError(self,r.get_name())
+        
         return 1
         for r in self.relations:
             if type(r) in self.class_type_list and r.get_name() not in data_base.relations_list_name:
@@ -117,26 +161,6 @@ class Expression(object):
     def get_sql_query(self):
         return self.sql_query
 
-    '''
-        This method is used to create the string representation of this class.
-        It uses a class_type_list since we're checking nested data within
-        @return String containing the wanted_expression type (SPJRUD_type or QUERY_TYPE->SQL)
-    '''
-    def proper_str(self,class_type_l,wanted_expression):
-
-        attList = []
-        relList = []
-
-        for a in self.attributes:
-            attList.append(type_attribute_to_string_inside_expression(str(a),class_type_l))
-        for r in self.relations:
-            relList.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
-
-        attString = transform_list_to_goodString(attList)
-        relString = transform_list_to_goodString(relList)
-
-        return f'{wanted_expression} {attString} FROM {relString}{self.other_query_addons}'
-        
     def __str__(self):
         return self.proper_str(self.class_type_list,self.SPJRUD_type)
         
@@ -148,15 +172,15 @@ class Expression(object):
 """
 class Select(Expression):
 
-    def __init__(self,attributes_list,wanted_values_list,operation:str,relation):
-        if len(attributes_list) != len(wanted_values_list):
+    def __init__(self,attributes_list,wanted_attribute_list,operation:str,wanted_values_list,relation):
+        if len(wanted_attribute_list) != len(wanted_values_list):
             raise InvalidNumberOfVariablesError("attributes/wanted values")
         
         super().__init__(attributes_list,[relation],"Select","SELECT")
 
-        self.other_query_addons = self.create_query_addon(attributes_list,wanted_values_list,operation)
-
+        self.other_query_addons = self.create_query_addon(wanted_attribute_list,wanted_values_list,operation)
         self.accepted_operations = ["=",">","<",">=","<="]
+        self.wanted_attribute_list = wanted_attribute_list
         self.wanted_values_list = wanted_values_list
         self.operation = ""
         if operation.strip() not in self.accepted_operations:
@@ -169,28 +193,28 @@ class Select(Expression):
         @return: in this exact case , it will return 'WHERE "Attribute" = "Value" '
 
     '''
-    def create_query_addon(self,att_list,wanted_values,operation:str):
+    def create_query_addon(self,wanted_att,wanted_values,operation:str):
         query_addon = " WHERE "
         left_constructor = []
         types_list = self.class_type_list
         x = 0
-        while x < len(att_list):
-            if type(att_list[x]) in types_list:
+        while x < len(wanted_att):
+            if type(wanted_att[x]) in types_list:
                 if type(wanted_values[x])== str:
-                    temp = "("+str(att_list[x])+")" + operation + '"'+wanted_values[x]+'"'
+                    temp = "("+str(wanted_att[x])+")" + operation + "'"+wanted_values[x]+"'"
                 else:
-                    temp = "("+str(att_list[x])+")" + operation + str(wanted_values[x])
+                    temp = "("+str(wanted_att[x])+")" + operation + str(wanted_values[x])
             else : 
                 if type(wanted_values[x])== str:
-                    temp = str(att_list[x]) + operation + '"'+wanted_values[x]+'"'
+                    temp = str(wanted_att[x]) + operation + "'"+wanted_values[x]+"'"
                 else:
-                    temp = str(att_list[x]) + operation + str(wanted_values[x])
+                    temp = str(wanted_att[x]) + operation + str(wanted_values[x])
             
             
             left_constructor.append(temp)
             x += 1
 
-        query_addon += ','.join(left_constructor)
+        query_addon += ' and '.join(left_constructor)
 
         return query_addon
 
@@ -200,7 +224,7 @@ class Select(Expression):
 """
 class Project(Expression):
     def __init__(self,attribute_list,relation):
-        super().__init__(attribute_list,[relation],"Project","SELECT")
+        super().__init__(attribute_list,[relation],"Project","SELECT DISTINCT")
 
 
 """
@@ -303,14 +327,14 @@ class Rename(Expression):
 """
 class Join(Expression):
     def __init__(self, relations_list):
-        super().__init__([],relations_list,"Join","INNER JOIN")
-        # for r in relations_list:
-        #     if type(r) is not Relation:
-        #         raise InvalidRelationType(self,r)
+        super().__init__([],relations_list,"Join","CROSS JOIN")
     
     def check_data(self, data_base):
         self.check_data_relations(data_base)
     
+    def check_data_join(self):
+        #TODO check # of attributes etc. etc. etc.
+        pass
 
     """
         Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
@@ -324,28 +348,30 @@ class Join(Expression):
             if type(relation) in self.class_type_list:
                 relation.execute(data_base)
         
+        self.check_data_join()
+
         if len(self.relations)== 2 :
             all_halvs_of_query = []
             for relation in self.relations:
                 if type(relation) in self.class_type_list:
-                    all_halvs_of_query.append(f"{relation.sql_query}")
+                    all_halvs_of_query.append(f"({relation.sql_query})")
                 else:
                     all_halvs_of_query.append(f"SELECT * FROM {relation.get_name()}")
-            # self.sql_query = f"(SELECT * FROM {str(self.relations[0])}) UNION (SELECT * FROM {str(self.relations[1])}) ".replace("'","").replace("\\","")
 
-            self.sql_query = " INNER JOIN ".join(all_halvs_of_query).replace("'","").replace("\\","")
+            self.sql_query = " CROSS JOIN ".join(all_halvs_of_query).replace("'","").replace("\\","")
             return self.sql_query
 
-        select_query_per_relation = []
-        for relation in self.relations:
-            if type(relation) in self.class_type_list:
-                select_query_per_relation.append(f"{relation.sql_query}")    
-            else:
-                select_query_per_relation.append(f"SELECT * FROM {relation.get_name()}")
+        else:
+            select_query_per_relation = []
+            for relation in self.relations:
+                if type(relation) in self.class_type_list:
+                    select_query_per_relation.append(f"({relation.sql_query})")    
+                else:
+                    select_query_per_relation.append(f"SELECT * FROM {relation.get_name()}")
 
-        self.sql_query = " INNER JOIN ".join(select_query_per_relation).replace("'","").replace("\\","")
+            self.sql_query = " CROSS JOIN ".join(select_query_per_relation).replace("'","").replace("\\","")
 
-        return self.sql_query
+            return self.sql_query
     
 
     '''        
@@ -357,7 +383,13 @@ class Join(Expression):
         relList = []
 
         for r in self.relations:
-            relList.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
+            #TODO CHANGED HERE !!!!!
+            if type(r) in self.class_type_list:
+                relList.append(f"<{type_attribute_to_string_inside_expression(r.sql_query,class_type_l)}>")
+            else:
+                relList.append(type_attribute_to_string_inside_expression(str(r),class_type_l))
+
+
 
         relString = transform_list_to_goodString(relList)
 
@@ -368,10 +400,10 @@ class Join(Expression):
 """
 class Difference(Expression):
     def __init__(self, r1,r2):
-        super().__init__([],[r1,r2],"Difference","MINUS")
+        super().__init__([],[r1,r2],"Difference","EXCEPT")
         temp = [r1,r2]
         for r in temp:
-            if type(r) is not Relation:
+            if type(r) is not Relation and type(r) not in self.class_type_list:
                 raise InvalidRelationType(self,r)
         self.r1 = r1
         self.r2 = r2
@@ -392,8 +424,17 @@ class Difference(Expression):
             if type(relation) in self.class_type_list:
                 relation.execute(data_base)
         
+        halves_of_query = []
+        
+        for r in self.relations:
+            if type(r) in self.class_type_list:
+                halves_of_query.append(r.sql_query)
+            # here we know that it can only be type Relation:
+            else:
+                halves_of_query.append(f"SELECT * FROM {r.get_name()}")
 
-        self.sql_query = f"({Project([Attribute('*','',True,True,[])],self.r1).execute(data_base)}) MINUS ({Project([Attribute('*','',True,True,[])],self.r2).execute(data_base)})".replace("'","").replace("\\","")
+        self.sql_query = f" {self.QUERY_TYPE} ".join(halves_of_query)
+        #.replace("\\","")
 
         return self.sql_query
     
@@ -406,17 +447,72 @@ class Difference(Expression):
     Class used to define Union query from SPJRUD format.
 """
 class Union(Expression):
-    # basically just Join but  R ∪ S is only allowed if R and S have exactly the same attributes
+    # basically just Join but  R ∪ S is only allowed if R and S have exactly the same attributes(name,type)
 
     def __init__(self, r1, r2):
         self.r1 = r1
         self.r2 = r2
         temp = [r1,r2]
-        super().__init__([],[r1,r2],"Union","CROSS JOIN")
-        # for r in temp:
-        #     if type(r) is not Relation:
-        #         raise InvalidRelationType(self,r)
+        super().__init__([],[r1,r2],"Union","UNION")
         
+
+    def check_data_union(self):
+        # r1 is expression
+        if type(self.r1) in self.class_type_list:
+            # r2 is expression
+            if type(self.r2) in self.class_type_list:
+                r1_att_name = []
+                r1_att_type = []
+                for a1 in self.r1.attributes:
+                    r1_att_name.append(a1.get_name())
+                    r1_att_type.append(a1.get_data_type())
+
+                for a2 in self.r2.attributes:
+                    if a2.get_name() not in r1_att_name:
+                        raise AttributesNameDontMatchError(a2.get_name())
+                    if a2.get_data_type() not in r1_att_type:
+                        raise AttributesTypeDontMatchError(a2.get_data_type())
+            # r2 is not expression
+            else:
+                r1_att_name = []
+                r1_att_type = []
+                for a1 in self.r1.attributes:
+                    r1_att_name.append(a1.get_name())
+                    r1_att_type.append(a1.get_data_type())
+
+                for a2 in self.r2.get_attributes_list():
+                    if a2.get_name() not in r1_att_name:
+                        raise AttributesNameDontMatchError(a2.get_name())
+                    if a2.get_data_type() not in r1_att_type:
+                        raise AttributesTypeDontMatchError(a2.get_data_type())
+        # r1 is not expression
+        else:
+            # r2 is expression
+            if type(self.r2) in self.class_type_list:
+                r1_att_name = []
+                r1_att_type = []
+                for a1 in self.r1.get_attributes_list():
+                    r1_att_name.append(a1.get_name())
+                    r1_att_type.append(a1.get_data_type())
+
+                for a2 in self.r2.attributes:
+                    if a2.get_name() not in r1_att_name:
+                        raise AttributesNameDontMatchError(a2.get_name())
+                    if a2.get_data_type() not in r1_att_type:
+                        raise AttributesTypeDontMatchError(a2.get_data_type())
+            # r2 is not expression
+            else:
+                r1_att_name = []
+                r1_att_type = []
+                for a1 in self.r1.get_attributes_list():
+                    r1_att_name.append(a1.get_name())
+                    r1_att_type.append(a1.get_data_type())
+
+                for a2 in self.r2.get_attributes_list():
+                    if a2.get_name() not in r1_att_name:
+                        raise AttributesNameDontMatchError(a2.get_name())
+                    if a2.get_data_type() not in r1_att_type:
+                        raise AttributesTypeDontMatchError(a2.get_data_type())
 
     """
         Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
@@ -424,8 +520,6 @@ class Union(Expression):
         To acess that query use <expression>.get_sql_query().
     """
     def execute(self,data_base):
-        # self.sql_query = Join([self.r1,self.r2]).execute(data_base)
-        #must be checked?
 
         self.check_data(data_base)
 
@@ -433,13 +527,16 @@ class Union(Expression):
             if type(relation) in self.class_type_list:
                 relation.execute(data_base)
         
+        #TODO CHANGED HERE !!
+        self.check_data_union()
+
         elements = []
         for relation in self.relations:
             if type(relation) in self.class_type_list:
                 elements.append(f"{relation.sql_query}")
             else:
                 elements.append(f"{relation.get_name()}")
-        self.sql_query = f" {self.QUERY_TYPE} ".join(elements).replace("'","").replace("\\","")
+        self.sql_query = f" {self.QUERY_TYPE} ".join(elements).replace("\\","")
 
         return self.sql_query
 

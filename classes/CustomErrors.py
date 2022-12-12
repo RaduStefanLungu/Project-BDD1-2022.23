@@ -80,3 +80,28 @@ class InvalidNewAttributeTypeOnNameChangeError(Exception):
 
     def __str__(self):
         return self.message
+
+
+class AttributesNameDontMatchError(Exception):
+    
+    def __init__(self,att_name1):
+        self.message = f"""
+        {code_red}Invalid{code_reset} attribute name.
+        Bad attribute name : {code_light_purple}{att_name1}{code_reset}
+        {code_green}Please check your attributes types.{code_reset}
+        """
+
+    def __str__(self):
+        return self.message
+
+class AttributesTypeDontMatchError(Exception):
+    
+    def __init__(self,att_type1):
+        self.message = f"""
+        {code_red}Invalid{code_reset} attribute type.
+        Bad attribute type : {code_light_purple}{att_type1}{code_reset}
+        {code_green}Please check your attributes types.{code_reset}
+        """
+
+    def __str__(self):
+        return self.message

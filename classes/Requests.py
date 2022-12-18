@@ -114,7 +114,7 @@ class Expression(object):
     def check_data(self,data_base):
         
         self.check_data_relations(data_base)
-        # self.check_data_attributes()
+        self.check_data_attributes()
         pass
         
     """
@@ -123,16 +123,21 @@ class Expression(object):
         @return True if everything is ok, raises ValueError if not.
     """
     def check_data_relations(self,data_base):
+        #checking if the relations within the class are correct
         for r in self.relations:
-            if type(r) is not Relation and (type(r) is not self.class_type_list):
+            # print(type(r))
+            if type(r) is not Relation and (type(r) not in self.class_type_list):
                 raise InvalidRelationType(self,r)
-            exist_in_db = False
-            for db_r in data_base.get_relations():
-                if db_r.get_name() is r.get_name():
-                    exist_in_db=True
             
-            if not exist_in_db:
-                raise RelationNotInDBError(self,r.get_name())
+            #check if r is in the db:
+            db_r = data_base.get_relations()
+            #here we suppose r is an Relation type (comming from the db.relations_list)
+            if r not in db_r: 
+                if type(r) not in self.class_type_list:
+                    raise RelationNotInDBError(self,r)
+                else:
+                    #here we suppose it is an Expression type:
+                    r.check_data_relations(data_base)
         
         return 1
         for r in self.relations:
@@ -150,9 +155,14 @@ class Expression(object):
             if a.get_name() == "*":
                 return True
             checker = False
-            for ra in self.relations[0].attributes_list:    # get our relation's attributes
-                if a.get_name() == ra.get_name():           # compare
-                    checker=True
+            for r in self.relations:    #check inside every relation
+                for att_in_relation in r.attributes_list:   #get the attributes of the relation
+                    if a.get_name() == att_in_relation.get_name():  #check if the given attribute exist inside the existing relations
+                        checker=True
+
+            # for ra in self.relations[0].attributes_list:    # get our relation's attributes
+            #     if a.get_name() == ra.get_name():           # compare
+            #         checker=True
 
             if not checker:
                 raise AttributeNotInRelationError(self,a)

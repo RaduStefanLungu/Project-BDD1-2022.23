@@ -121,15 +121,18 @@ if __name__=='__main__':
     # print(q2.sql_query)
     # q2.execute_on_db(my_db)
 
-    print("\n\n")
+#   Error example of Relation not in DB: 
 
-    r1 = Select([all],[att_salary],">=",[20000],company)
-    r2 = Select([all],[att_name],"=",["Paul"],company)
-    q2 = Difference(company,r1)
-    q2.execute(my_db)
-    print(q2.sql_query)
-    q2.execute_on_db(my_db)
+    # print("\n\n")
+
+    # r1 = Select([all],[att_salary],">=",[20000],company)
+    # r2 = Select([all],[att_name],"=",["Paul"],company)
+    # q2 = Difference(company,Relation("JINX",[att_salary,att_name]))
+    # q2.execute(my_db)
+    # print(q2.sql_query)
+    # q2.execute_on_db(my_db)
     
+#   -------
 
     # print('\n\n')
 

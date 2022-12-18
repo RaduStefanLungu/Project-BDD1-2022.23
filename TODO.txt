@@ -19,14 +19,15 @@
 ----> afficher le résultat d’une requête à l’écran
 3. Think of creating an inside structure based on the fetched data
     of the .db file
-============
-
-
-=== TODO ===
 
 ---->> CHECK THE UNION AND JOIN METHODS ! THEY NO GOOD @@@@@
 ---->> CHECK THE SELECT METHODS ! THEY NO GOOD @@@@@
 
+
+============
+
+
+=== TODO ===
 
 ----> créer une nouvelle table à partir du résultat d’une requête ;
 

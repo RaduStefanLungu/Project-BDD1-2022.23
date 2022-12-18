@@ -11,11 +11,11 @@
 
 Voici un example d'utilisation en code : 
 
-import sqlite3
-from classes.Attribute import Attribute
-from classes.Relation import Relation
-from classes.Requests import *
-from classes.DataBase import DataBase
+>import sqlite3
+>from classes.Attribute import Attribute
+>from classes.Relation import Relation
+>from classes.Requests import *
+>from classes.DataBase import DataBase
 
 
 creation de db locale :

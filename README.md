@@ -11,11 +11,11 @@
 
 Voici un example d'utilisation en code : 
 
->import sqlite3
->from classes.Attribute import Attribute
->from classes.Relation import Relation
->from classes.Requests import *
->from classes.DataBase import DataBase
+>import sqlite3<br>
+>from classes.Attribute import Attribute<br>
+>from classes.Relation import Relation<br>
+>from classes.Requests import *<br>
+>from classes.DataBase import DataBase<br>
 
 
 creation de db locale :
@@ -39,11 +39,11 @@ d'abord il faut se decider de quels attributs on a besoin:
 >all = Attribute("*","TEXT",0,0,[])  
 ceci est le fameux "SELECT * FROM R"
 
->q0 = Project([all],rel_3)
+>q0 = Project([all],rel_3)<br>
 on doit executer le query pour le transformer en SQL 
->q0.execute()
+>q0.execute()<br>
 maintenant on peut l'executer sur la db
->q0.execute_on_db(my_db)
+>q0.execute_on_db(my_db)<br>
 
 
 on peut aussi faire des requêtes imbriquées:

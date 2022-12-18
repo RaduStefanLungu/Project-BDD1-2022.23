@@ -54,7 +54,7 @@ on peut aussi faire des requêtes imbriquées:
 ce n'est pas nécessaire d'executer chaque requête car si cette dérnière est utilisée dans une autre requête
 elle sera executée automatiquement
 
->att_salary = Attribute("SALARY","TEXT",0,0,[])\n
+>att_salary = Attribute("SALARY","TEXT",0,0,[]) <br>
 >att_address = Attribute("ADDRESS","TEXT",0,0,[])
 >att_name = Attribute("NAME","TEXT",0,0,[])
 >q11 = Select([att_name],"=",["Paul"],q1)

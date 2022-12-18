@@ -29,11 +29,11 @@
 
 === TODO ===
 
-----> créer une nouvelle table à partir du résultat d’une requête ;
+----> faire toutes les vérifications nécessaires pour les Errors 
 
+----> créer une nouvelle table à partir du résultat d’une requête   (nope)
 
-
-4. (optional) Create a way to manually chose what Tables to load
+4. (optional) Create a way to manually chose what Tables to load    (nope)
     in the application
 
 ============

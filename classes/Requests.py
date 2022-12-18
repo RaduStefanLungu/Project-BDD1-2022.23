@@ -125,7 +125,6 @@ class Expression(object):
     def check_data_relations(self,data_base):
         #checking if the relations within the class are correct
         for r in self.relations:
-            # print(type(r))
             if type(r) is not Relation and (type(r) not in self.class_type_list):
                 raise InvalidRelationType(self,r)
             
@@ -140,9 +139,9 @@ class Expression(object):
                     r.check_data_relations(data_base)
         
         return 1
-        for r in self.relations:
-            if type(r) in self.class_type_list and r.get_name() not in data_base.relations_list_name:
-                raise RelationNotInDBError(self,r.get_name())
+        # for r in self.relations:
+        #     if type(r) in self.class_type_list and r.get_name() not in data_base.relations_list_name:
+        #         raise RelationNotInDBError(self,r.get_name())
     
     """
         Method called inside check_data(...).
@@ -182,11 +181,11 @@ class Expression(object):
 """
 class Select(Expression):
 
-    def __init__(self,attributes_list,wanted_attribute_list,operation:str,wanted_values_list,relation):
+    def __init__(self,wanted_attribute_list,operation:str,wanted_values_list,relation):
         if len(wanted_attribute_list) != len(wanted_values_list):
             raise InvalidNumberOfVariablesError("attributes/wanted values")
         
-        super().__init__(attributes_list,[relation],"Select","SELECT")
+        super().__init__([Attribute("*","TEXT",0,0,[])],[relation],"Select","SELECT")
 
         self.other_query_addons = self.create_query_addon(wanted_attribute_list,wanted_values_list,operation)
         self.accepted_operations = ["=",">","<",">=","<="]
@@ -336,15 +335,12 @@ class Rename(Expression):
     Class used to define Join query from SPJRUD format.
 """
 class Join(Expression):
-    def __init__(self, relations_list):
-        super().__init__([],relations_list,"Join","CROSS JOIN")
+    def __init__(self, r1,r2):
+        super().__init__([],[r1,r2],"Join","CROSS JOIN")
     
     def check_data(self, data_base):
         self.check_data_relations(data_base)
     
-    def check_data_join(self):
-        #TODO check # of attributes etc. etc. etc.
-        pass
 
     """
         Method used to transform the SPJRUD expression to SQL expression and doing all the needed checking beforehand on the expression.
@@ -357,8 +353,6 @@ class Join(Expression):
         for relation in self.relations:
             if type(relation) in self.class_type_list:
                 relation.execute(data_base)
-        
-        self.check_data_join()
 
         if len(self.relations)== 2 :
             all_halvs_of_query = []

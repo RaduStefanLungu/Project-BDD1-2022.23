@@ -1,6 +1,8 @@
 from classes.Relation import Relation
 from classes.Attribute import Attribute
 
+
+#Colors taken from AINSI CODE from : https://www.geeksforgeeks.org/print-colors-python-terminal/
 code_reset = "\033[00m"
 code_red = "\033[91m"
 code_green = "\033[92m"

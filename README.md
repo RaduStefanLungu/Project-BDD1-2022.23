@@ -36,13 +36,13 @@ vu qu'on a access à tout la database, on peut maintenant écrire et executer de
 
 d'abord il faut se decider de quels attributs on a besoin:
 
->all = Attribute("*","TEXT",0,0,[])  
+>all = Attribute("*","TEXT",0,0,[]) <br> 
 ceci est le fameux "SELECT * FROM R"
 
 >q0 = Project([all],rel_3)<br>
-on doit executer le query pour le transformer en SQL 
+on doit executer le query pour le transformer en SQL <br>
 >q0.execute()<br>
-maintenant on peut l'executer sur la db
+maintenant on peut l'executer sur la db<br>
 >q0.execute_on_db(my_db)<br>
 
 
